@@ -1,9 +1,16 @@
+"use client";
+import { PrimaryNav } from "../../_components/PrimaryNav";
+import SearchInbox from "../../_components/SearchResult";
 
-import { Button } from "@/components/ui/button"
-import MainHeader from "../../_components/MainHeader"
-
-export default function Main() {
-    return (
-        <div><MainHeader /></div>
-    )
+const LandingPage = () => {
+  return ( 
+    <>
+      <div className="border-b border-gray-200">
+        <PrimaryNav />
+      </div>
+      <SearchInbox />
+    </>
+  );
 }
+
+export default LandingPage;

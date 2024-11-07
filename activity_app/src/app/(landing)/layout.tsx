@@ -7,7 +7,9 @@ const LandingLayout = ({
 }) => {
     return ( 
         <div className="h-full">
-            <Navbar />
+            <div className="border-b border-gray-200">
+                <Navbar />
+            </div>
             <main className="h-full pt-10">
                 {children}
             </main>

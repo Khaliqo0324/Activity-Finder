@@ -13,7 +13,12 @@ export const Heading = () => {
             <h3 className="text-base sm:text-xl md:text-2xl font-medium mt-4">
                 <span className="underline">NAME</span> is your ultimate destination for finding and joining activities, bringing people together with ease and simplicity.
             </h3>
-            <Button> Enter NAME </Button>
+            <Button> 
+                <Link href="/base">
+                    Enter NAME
+                    
+                </Link>
+            </Button>
         </div>
     );
 }

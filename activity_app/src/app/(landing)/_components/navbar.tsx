@@ -1,6 +1,6 @@
 "use client";
 
-import { Logo } from "./logo";
+import { Logo } from "../../../components/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -15,15 +15,10 @@ export const Navbar = () => {
                         Log in
                     </Link>
                 </Button>
-                <Button size="sm" asChild>
-                    <Link href="/signup">
-                        Get Nexa Free
-                    </Link>
-                </Button>
                 
-                <Button variant="ghost" size="sm" asChild>
-                    <Link href="/documents">
-                        Enter Nexa
+                <Button size="sm" asChild>
+                    <Link href="/base">
+                        Enter NAME
                     </Link>
                 </Button>
                 

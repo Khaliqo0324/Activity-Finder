@@ -9,7 +9,9 @@ const LandingPage = () => {
         <Heading />
         <LandingImage />
       </div>
-      <Footer />
+      <div className="border-b border-gray-200">
+        <Footer />
+      </div>
     </div>
    );
 }
