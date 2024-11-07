@@ -10,6 +10,9 @@ const LandingPage = () => {
         <LandingImage />
       </div>
       <div className="border-b border-gray-200">
+
+      </div>
+      <div className="border-b border-gray-200">
         <Footer />
       </div>
     </div>
