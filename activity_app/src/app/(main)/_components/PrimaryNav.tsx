@@ -17,7 +17,9 @@ export const PrimaryNav = () => {
                 </Button>
 
                 <Button size="sm" asChild>
-                    <p>SOMETHING</p>
+                    <Link href="/">
+                    <p>Sign Out</p>
+                    </Link>
                 </Button>
                 <Button>
                 <Link href="/base2">
