@@ -18,6 +18,8 @@ interface Search {
 
 const SearchInbox = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFavoritesModalOpen, setFavoritesModalOpen] = useState(false); // Modal state
+
   
   const results: Search[] = [
     {
@@ -82,6 +84,15 @@ const SearchInbox = () => {
     );
   };
 
+  const toggleFavoritesModal = () => {
+    setFavoritesModalOpen(!isFavoritesModalOpen);
+  };
+  
+  
+
+
+  
+
   return (
     <div className="flex w-screen h-screen">
       <div className="w-1/2 p-4 border-r border-gray-200">
@@ -93,8 +104,8 @@ const SearchInbox = () => {
               <Button variant="outline" className="bg-white">
                 Discover
               </Button>
-              <Button variant="outline" className="bg-white">
-                Favorites
+              <Button variant="outline" className="bg-white" onClick={toggleFavoritesModal}>
+                Favorites 
               </Button>
               <Button variant="outline" className="bg-white">
                 Host
@@ -177,7 +188,59 @@ const SearchInbox = () => {
       <div className="w-1/2 flex items-center justify-center">
         <p className="text-2xl font-bold">Map</p>
       </div>
+
+      {isFavoritesModalOpen && (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold">Favorites</h2>
+            <button onClick={toggleFavoritesModal} className="text-xl">×</button>
+          </div>
+          <div className="space-y-4">
+                <div className="p-4 border rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold">Activity</p>
+                    <p className="text-gray-500">Location</p>
+                  </div>
+                  <button
+                    className="text-red-500 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div className="p-4 border rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold">Activity</p>
+                    <p className="text-gray-500">Location</p>
+                  </div>
+                  <button
+                    className="text-red-500 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div className="p-4 border rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold">Activity</p>
+                    <p className="text-gray-500">Location</p>
+                  </div>
+                  <button
+                    className="text-red-500 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+
     </div>
+
+    
   );
 };
 
