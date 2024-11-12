@@ -19,7 +19,12 @@ export const PrimaryNav = () => {
                 <Button size="sm" asChild>
                     <p>SOMETHING</p>
                 </Button>
-
+                <Button>
+                <Link href="/base2">
+                    Add Event
+                    
+                </Link>
+                </Button>
                 <UserAvatar />
             </div>
 

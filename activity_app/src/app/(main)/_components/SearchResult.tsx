@@ -13,6 +13,7 @@ interface Search {
   timestamp: string;
   tags: string[];
   isVerified?: boolean;
+  imageUrl: string;
 }
 
 const SearchInbox = () => {
@@ -25,7 +26,8 @@ const SearchInbox = () => {
       location: "Science Learning Center",
       preview: "Attend the art club meeting today and enjoy making something special",
       timestamp: "12/4/2024",
-      tags: ["meeting", "club", "important"]
+      tags: ["meeting", "club", "important"],
+      imageUrl: "https://www.freeiconspng.com/uploads/maps-icon-16.png",
     },
     {
         id: 2,
@@ -33,7 +35,17 @@ const SearchInbox = () => {
         location: "Miller Plant",
         preview: "Attend the physics club meeting today and enjoy making something special",
         timestamp: "12/4/2024",
-        tags: ["meeting", "club"]
+        tags: ["meeting", "club"],
+        imageUrl: "https://www.freeiconspng.com/uploads/maps-icon-16.png",
+    },
+    {
+      id: 3,
+        activity: "Run Club",
+        location: "Myers Quad",
+        preview: "Run and explore Athens with a group of likeminded students...",
+        timestamp: "12/4/2024",
+        tags: ["meeting", "club"],
+        imageUrl: "https://www.freeiconspng.com/uploads/maps-icon-16.png",
     },
     // Additional results here...
   ];
@@ -119,6 +131,14 @@ const SearchInbox = () => {
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base font-semibold">
+                        <div>
+                        <Button variant="outline" className="bg-white">
+                            Add to Favorites
+                        </Button>
+                        </div>
+                        <div>
+                          <img src={result.imageUrl} alt="img"></img>
+                        </div>
                         {highlightMatch(result.activity)}
                       </CardTitle>
                       {result.isVerified && (
