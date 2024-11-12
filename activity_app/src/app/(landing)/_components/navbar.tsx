@@ -18,7 +18,7 @@ export const Navbar = () => {
                 
                 <Button size="sm" asChild>
                     <Link href="/base">
-                        Enter NAME
+                        Enter ClubQuest
                     </Link>
                 </Button>
                 

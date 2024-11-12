@@ -15,7 +15,7 @@ export const Heading = () => {
             </h3>
             <Button> 
                 <Link href="/base">
-                    Enter NAME
+                    Enter ClubQuest
                     
                 </Link>
             </Button>
