@@ -18,6 +18,19 @@ import { Input } from "@/components/ui/input"
 import {Textarea} from "@/components/ui/textarea";
 import { useState } from 'react';
 
+type EventProps = {
+    event: {
+      name: string;
+      activity: string;
+      address: string;
+      city: string;
+      state: string;
+      details: string;
+    };
+}
+
+
+
 export const AddEvent = () => {
     const [name, setName] = useState("");
     const [activity, setActivity] = useState("");
@@ -25,6 +38,20 @@ export const AddEvent = () => {
     const [city, setCity] = useState("");
     const [state, setState] = useState("");
     const [details, setDetails] = useState("");
+
+    const SignupInfo = ({event} : EventProps) => {
+        const outputData = () => {
+            <div>
+            <h1>Name: {name} </h1>
+            <p> Activity: {activity} </p>
+            <p>Address {address} </p>
+            <p>City: {city} </p>
+            <p>State: {state} </p>
+            <p>Details: {details} </p>
+            </div>
+        }
+        console.log(outputData);    
+    }
 
     const submitHandler = (e) => {
         console.log(form);
@@ -37,6 +64,7 @@ export const AddEvent = () => {
             setState("");
             setDetails("");
         }
+        console.log(SignupInfo);
     }
 
 
