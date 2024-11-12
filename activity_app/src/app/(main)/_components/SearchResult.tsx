@@ -148,7 +148,7 @@ const SearchInbox = () => {
                         </Button>
                         </div>
                         <div>
-                          <img src={result.imageUrl} alt="img"></img>
+                          <img src={result.imageUrl} alt="img" className='h-20 w-20'></img>
                         </div>
                         {highlightMatch(result.activity)}
                       </CardTitle>
