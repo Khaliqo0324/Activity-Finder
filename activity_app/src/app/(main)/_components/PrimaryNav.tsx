@@ -11,16 +11,6 @@ export const PrimaryNav = () => {
         <div className="flex items-center w-full p-6 bg-background z-50">
             <Logo />
             <div className="md:ml-auto md:justify-end w-full flex items-center space-x-4">
-        
-                <Button variant="ghost" size="sm" asChild>
-                    <p>SOMETHING</p>
-                </Button>
-
-                <Button size="sm" asChild>
-                    <Link href="/">
-                    <p>Sign Out</p>
-                    </Link>
-                </Button>
                 <Button>
                 <Link href="/base2">
                     Add Event
