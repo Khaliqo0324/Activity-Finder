@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import Map from './Map';
 
 interface Search {
   id: number;
@@ -186,7 +187,19 @@ const SearchInbox = () => {
       </div>
       
       <div className="w-1/2 flex items-center justify-center">
-        <p className="text-2xl font-bold">Map</p>
+        <Map
+        center={{ lat: 37.7749, lng: -122.4194 }}
+        zoom={12}
+        markers={[
+          {
+            position: { lat: 37.7749, lng: -122.4194 },
+            title: "San Francisco"
+          }
+        ]}
+        height="600px"
+        onMapLoad={(map) => console.log('Map loaded:', map)}
+        onError={(error) => console.error('Map error:', error)}
+        />
       </div>
 
       {isFavoritesModalOpen && (
