@@ -1,16 +1,16 @@
 "use client";
+import Inbox from "../../_components/index";
 import { PrimaryNav } from "../../_components/PrimaryNav";
-import SearchInbox from "../../_components/SearchResult";
 
-const LandingPage = () => {
+const MainPage = () => {
   return ( 
     <>
       <div className="border-b border-gray-200">
         <PrimaryNav />
       </div>
-      <SearchInbox />
+      <Inbox/>
     </>
   );
 }
 
-export default LandingPage;
+export default MainPage;
