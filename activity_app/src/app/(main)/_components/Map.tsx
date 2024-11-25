@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { loadGoogleMapsScript, isGoogleMapsLoaded } from './googleMapsLoader';
+
 
 interface MapProps {
   center: {
@@ -157,46 +159,32 @@ const Map = ({
     }
   }, [center, zoom, onMapLoad, onError, showUserLocation, userLocation, createUserLocationMarker, updateMarkers]);
 
-  useEffect(() => {
-    const loadGoogleMaps = async () => {
-      if (scriptLoadedRef.current) return;
-      
-      if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-        throw new Error('Google Maps API key is not configured');
-      }
-
-      try {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,marker&v=beta`;
-        script.async = true;
-        script.defer = true;
-        
-        await new Promise<void>((resolve, reject) => {
-          script.onload = () => {
+  
+    useEffect(() => {
+      const loadMap = async () => {
+        if (!scriptLoadedRef.current) {
+          try {
+            await loadGoogleMapsScript();
             scriptLoadedRef.current = true;
             setIsLoaded(true);
-            resolve();
-          };
-          script.onerror = () => reject(new Error('Failed to load Google Maps script'));
-          document.head.appendChild(script);
-        });
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to load Google Maps');
-        setError(error.message);
-        onError?.(error);
-      }
-    };
+          } catch (err) {
+            const error = err instanceof Error ? err : new Error('Failed to load Google Maps');
+            setError(error.message);
+            onError?.(error);
+          }
+        }
+     };
+  
+      loadMap();
 
-    loadGoogleMaps();
-
-    return () => {
-      markersRef.current.forEach(marker => marker.map = null);
-      if (userMarkerRef.current) {
-        userMarkerRef.current.map = null;
-      }
-      markersRef.current = [];
-    };
-  }, [onError]);
+      return () => {
+        markersRef.current.forEach(marker => marker.map = null);
+        if (userMarkerRef.current) {
+          userMarkerRef.current.map = null;
+        }
+        markersRef.current = [];
+      };
+    }, [onError]);
 
   useEffect(() => {
     if (isLoaded && !mapInstanceRef.current) {
