@@ -33,6 +33,7 @@ export interface Location {
   ] as const;
   
   export const PLACE_TYPES = [
+    { value: 'all', label: 'All' },
     { value: 'restaurant', label: 'Restaurants' },
     { value: 'cafe', label: 'Cafes' },
     { value: 'gym', label: 'Gyms' },
@@ -40,3 +41,32 @@ export interface Location {
     { value: 'museum', label: 'Museums' },
     { value: 'library', label: 'Libraries' }
   ] as const;
+
+  export interface Event {
+    id: string;
+    name: string;
+    description: string;
+    start_time: string;
+    end_time: string;
+    location: string;
+    type: string;
+    capacity?: number;
+    attendees?: number;
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+    };
+  }
+  
+  export const EVENT_TYPES = [
+    { value: 'all', label: 'All Events' },
+    { value: 'music', label: 'Music' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'art', label: 'Art & Culture' },
+    { value: 'food', label: 'Food & Drink' },
+    { value: 'networking', label: 'Networking' },
+    { value: 'education', label: 'Education' },
+    { value: 'community', label: 'Community' },
+  ];
