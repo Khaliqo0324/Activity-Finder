@@ -4,6 +4,7 @@ export interface Location {
   }
   
   export interface Place {
+    place_id: string;
     id: string;
     name: string;
     vicinity: string;
