@@ -81,7 +81,7 @@ const Map = ({
       center: position,
       radius: 50,
       fillColor: '#4A90E2',
-      fillOpacity: 0.2,
+      fillOpacity: 1,
       strokeColor: '#4A90E2',
       strokeOpacity: 0.3,
       strokeWeight: 1,
