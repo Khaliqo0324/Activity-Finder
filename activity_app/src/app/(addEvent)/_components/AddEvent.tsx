@@ -12,8 +12,12 @@ import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import React, { createContext, useContext} from 'react';
 
 // Define the form schema
+
+
+
 const formSchema = z.object({
   name: z.string().min(1, "Club name is required"),
   activity: z.string().min(1, "Activity name is required"),
@@ -23,11 +27,24 @@ const formSchema = z.object({
   details: z.string().min(1, "Details are required"),
 });
 
+
+
+
+
 // Infer the form type from the schema
 type FormValues = z.infer<typeof formSchema>;
 
+export const handlePinTitle = (value: string): any => {
+   
+}
+
+
+
+
 export const AddEvent = () => {
     // Initialize form with proper types
+    
+    
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -42,8 +59,12 @@ export const AddEvent = () => {
 
     // Form submission handler
     const onSubmit = (values: FormValues) => {
+        
+      
+       
         console.log("Form submitted with data:", values);
         form.reset();
+        
     };
 
     return (
@@ -53,11 +74,12 @@ export const AddEvent = () => {
                     <FormField
                         control={form.control}
                         name="name"
+                        
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Club Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter club name" {...field} />
+                                    <Input id="title" placeholder="Enter club name" {...field} />
                                 </FormControl>
                             </FormItem>
                         )}

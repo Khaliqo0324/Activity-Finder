@@ -5,6 +5,12 @@ import { Logo } from "../../../components/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { UserAvatar } from "@/components/avatar";
+import {AddEvent} from "../../(addEvent)/_components/AddEvent";
+import {useState} from 'react';
+
+
+
+
 
 export const PrimaryNav = () => {
     return (

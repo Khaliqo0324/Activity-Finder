@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'; 
 import { Search } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "../../../components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,7 +46,9 @@ const SearchInbox = () => {
   // Function to remove an activity from favorites
   const removeFromFavorites = (id: number) => {
     setFavorites(favorites.filter(favorite => favorite.id !== id));
-  };
+  };  
+  
+  const [isOnAddModalOpen, setOnAddModalOpen] = useState(false);
   
   const results: Search[] = [
     {
@@ -117,8 +119,12 @@ const SearchInbox = () => {
     setFavoritesModalOpen(!isFavoritesModalOpen);
   };
 
-
+  const toggleOnAddModal = () => {
+    setOnAddModalOpen(!isOnAddModalOpen);
+  };
   
+  
+
 
   
 
@@ -142,6 +148,9 @@ const SearchInbox = () => {
               <Button variant="outline" className="bg-white">
                 Filter
               </Button>
+              <Button variant="outline" className="bg-white" onClick={toggleOnAddModal}>
+                Add Event 
+              </Button >
             </div>
           </div>
         </div>
