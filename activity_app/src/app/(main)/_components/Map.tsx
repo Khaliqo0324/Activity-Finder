@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import {handlePinTitle} from '../../(addEvent)/_components/AddEvent';
 
 interface MapProps {
+  
   center: {
     lat: number;
     lng: number;
@@ -10,6 +12,7 @@ interface MapProps {
   zoom: number;
   markers?: Array<{
     position: {
+     
       lat: number;
       lng: number;
     };
@@ -102,7 +105,7 @@ const Map = ({
       const marker = new AdvancedMarkerElement({
         position: markerData.position,
         map: mapInstanceRef.current!,
-        title: markerData.title,
+        title: markerData.title  //<----values.name
       });
 
       if (markerData.title) {

@@ -10,6 +10,8 @@ import { FavoritesModal } from './FavoritesModal';
 import Map from './Map';
 import { Location, SearchState, Place, Event, EVENT_TYPES } from './types';
 import { EventFilters } from './EventFilters';
+import {AddModal} from "./AddModal";
+
 
 const LocationErrorAlert = ({ error, onRetry, isLoading }: { 
   error: string;
@@ -43,6 +45,7 @@ export const Inbox = () => {
 
   // Modal state
   const [isFavoritesModalOpen, setFavoritesModalOpen] = useState(false);
+  const [isOnAddModalOpen, setOnAddModalOpen] = useState(false);
 
   // Search results state
   const [searchState, setSearchState] = useState<SearchState>({
@@ -324,6 +327,7 @@ export const Inbox = () => {
             onFavoritesOpen={() => setFavoritesModalOpen(true)}
             onEventsToggle={handleEventsToggle}  // Use the new handler
             isEventsView={isEventsView}
+            onAddOpen={()=> setOnAddModalOpen(true)}
           />
           
           {locationError && (
@@ -417,6 +421,13 @@ export const Inbox = () => {
         isOpen={isFavoritesModalOpen}
         onClose={() => setFavoritesModalOpen(false)}
       />
+
+      <AddModal
+        isOpen={isOnAddModalOpen}
+        onClose={()=> setOnAddModalOpen(false)}
+      />
+
+
     </div>
   );
 };

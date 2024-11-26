@@ -17,7 +17,8 @@ export const FavoritesModal = ({ isOpen, onClose }: FavoritesModalProps) => {
           <button onClick={onClose} className="text-xl">×</button>
         </div>
         <div className="space-y-4">
-          {/* Favorites content */}
+          {/* */}
+         
         </div>
       </div>
     </div>

@@ -2,11 +2,13 @@
 import React from 'react';
 import { Loader2, MapPin, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { AddEvent } from '@/app/(addEvent)/_components/AddEvent';
 
 interface SearchHeaderProps {
   onSearch: () => void;
   isRequestingLocation: boolean;
   onFavoritesOpen: () => void;
+  onAddOpen: () => void;
   onEventsToggle: () => void;
   isEventsView: boolean;
 }
@@ -15,6 +17,7 @@ export const SearchHeader = ({
   onSearch, 
   isRequestingLocation, 
   onFavoritesOpen, 
+  onAddOpen, //<---added
   onEventsToggle,
   isEventsView 
 }: SearchHeaderProps) => (
@@ -46,6 +49,9 @@ export const SearchHeader = ({
       </Button>
       <Button variant="outline" className="bg-white" onClick={onFavoritesOpen}>
         Favorites
+      </Button>
+      <Button variant="outline" className="bg-white" onClick={onAddOpen}>
+       Add Event
       </Button>
     </div>
   </div>

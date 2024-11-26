@@ -23,6 +23,7 @@ export const PlaceCard = ({
     onFavoriteToggle?.(place.place_id, newFavoriteState);
   };
 
+  
   return (
     <Card className="hover:bg-gray-50">
       <CardHeader className="pb-2">
