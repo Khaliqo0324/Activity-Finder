@@ -16,9 +16,9 @@ export const Logo = () => {
                 width="40"
                 alt="Logo"
             />
-            <p className={cn("font-semibold", font.className)}>
+            <a href="/"><p className={cn("font-semibold", font.className)}>
                 ClubQuest
-            </p>
+            </p></a>
         </div>
     )
 }

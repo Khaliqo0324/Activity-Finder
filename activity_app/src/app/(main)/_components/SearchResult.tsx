@@ -19,7 +19,34 @@ interface Search {
 const SearchInbox = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFavoritesModalOpen, setFavoritesModalOpen] = useState(false); // Modal state
+  const [notification, setNotification] = useState<string | null>(null);
 
+  // Define the state for favorites
+  const [favorites, setFavorites] = useState<Search[]>([]);
+  
+
+  const showNotification = (message: string) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 1500);
+  };
+
+  // Function to add an activity to favorites
+  const addToFavorites = (result: Search) => {
+    // Prevent duplicates
+    if (!favorites.some(favorite => favorite.id === result.id)) {
+      showNotification("Added to Favorites!");
+      
+      setFavorites([...favorites, result]);
+    }
+  };
+
+
+  // Function to remove an activity from favorites
+  const removeFromFavorites = (id: number) => {
+    setFavorites(favorites.filter(favorite => favorite.id !== id));
+  };
   
   const results: Search[] = [
     {
@@ -51,6 +78,8 @@ const SearchInbox = () => {
     },
     // Additional results here...
   ];
+
+  
 
   const filteredSearches = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -87,28 +116,28 @@ const SearchInbox = () => {
   const toggleFavoritesModal = () => {
     setFavoritesModalOpen(!isFavoritesModalOpen);
   };
-  
-  
 
+
+  
 
   
 
   return (
     <div className="flex w-screen h-screen">
+      {notification && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white text-black border border-gray-400 px-8 py-4 rounded shadow-lg">
+          {notification}
+        </div>
+      )}
+
       <div className="w-1/2 p-4 border-r border-gray-200">
         {/* Buttons above the search bar */}
         <div className="max-w-3xl mx-auto p-4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Discover</h1>
             <div className="flex gap-2">
-              <Button variant="outline" className="bg-white">
-                Discover
-              </Button>
               <Button variant="outline" className="bg-white" onClick={toggleFavoritesModal}>
                 Favorites 
-              </Button>
-              <Button variant="outline" className="bg-white">
-                Host
               </Button>
               <Button variant="outline" className="bg-white">
                 Filter
@@ -143,9 +172,12 @@ const SearchInbox = () => {
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base font-semibold">
                         <div>
-                        <Button variant="outline" className="bg-white">
+                        <Button
+                            variant="outline"
+                            className="bg-white"
+                            onClick={() => addToFavorites(result)}>
                             Add to Favorites
-                        </Button>
+                          </Button>
                         </div>
                         <div>
                           <img src={result.imageUrl} alt="img" className='h-20 w-20'></img>
@@ -191,50 +223,32 @@ const SearchInbox = () => {
 
       {isFavoritesModalOpen && (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold">Favorites</h2>
-            <button onClick={toggleFavoritesModal} className="text-xl">×</button>
-          </div>
-          <div className="space-y-4">
-                <div className="p-4 border rounded-lg flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">Activity</p>
-                    <p className="text-gray-500">Location</p>
-                  </div>
-                  <button
-                    className="text-red-500 text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <div className="p-4 border rounded-lg flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">Activity</p>
-                    <p className="text-gray-500">Location</p>
-                  </div>
-                  <button
-                    className="text-red-500 text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <div className="p-4 border rounded-lg flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">Activity</p>
-                    <p className="text-gray-500">Location</p>
-                  </div>
-                  <button
-                    className="text-red-500 text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-          </div>
+      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold">Favorites</h2>
+          <button onClick={toggleFavoritesModal} className="text-xl">×</button>
+        </div>
+        <div className="space-y-4">
+          {favorites.map((favorite) => (
+            <div
+              key={favorite.id}
+              className="p-4 border rounded-lg flex justify-between items-center"
+            >
+              <div>
+                <p className="font-semibold">{favorite.activity}</p>
+                <p className="text-gray-500">{favorite.location}</p>
+              </div>
+              <button
+                className="text-red-500 text-sm"
+                onClick={() => removeFromFavorites(favorite.id)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
         </div>
       </div>
+    </div>
     )}
 
 
@@ -245,3 +259,4 @@ const SearchInbox = () => {
 };
 
 export default SearchInbox;
+

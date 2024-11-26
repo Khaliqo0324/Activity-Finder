@@ -14,10 +14,8 @@ export const PrimaryNav = () => {
                 <Button>
                 <Link href="/base2">
                     Add Event
-                    
                 </Link>
                 </Button>
-                <UserAvatar />
             </div>
 
         </div>
