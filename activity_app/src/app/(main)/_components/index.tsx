@@ -42,6 +42,7 @@ export const Inbox = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [eventType, setEventType] = useState('all');
   const [isEventsView, setIsEventsView] = useState(false);
+  const [favorites, setFavorites] = useState<Place[]>([]);
 
   // Modal state
   const [isFavoritesModalOpen, setFavoritesModalOpen] = useState(false);
@@ -130,6 +131,20 @@ export const Inbox = () => {
       }
     );
   }, []);
+
+  const handleFavoriteToggle = useCallback((placeId: string, isFavorite: boolean) => {
+    setFavorites(prev => {
+      if (isFavorite) {
+        const place = searchState.results.find(p => p.place_id === placeId);
+        if (place && !prev.some(p => p.place_id === placeId)) {
+          return [...prev, place];
+        }
+      } else {
+        return prev.filter(p => p.place_id !== placeId);
+      }
+      return prev;
+    });
+  }, [searchState.results]);
   
   const searchNearbyEvents = useCallback(async (location: Location) => {
     if (!mapServiceRef.current) return;
@@ -387,6 +402,8 @@ export const Inbox = () => {
               isLoading={searchState.isLoading}
               error={searchState.error}
               places={filteredPlaces}
+              onFavoriteToggle={handleFavoriteToggle}
+              favorites={favorites}
             />
           )}
         </div>
@@ -420,6 +437,8 @@ export const Inbox = () => {
       <FavoritesModal 
         isOpen={isFavoritesModalOpen}
         onClose={() => setFavoritesModalOpen(false)}
+        favorites={favorites}
+        onFavoriteToggle={handleFavoriteToggle}
       />
 
       <AddModal
