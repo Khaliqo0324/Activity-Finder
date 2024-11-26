@@ -1,4 +1,4 @@
-"use client";
+import React from 'react';
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -12,36 +12,34 @@ import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { createContext, useContext} from 'react';
-
-// Define the form schema
 
 
 
-const formSchema = z.object({
-  name: z.string().min(1, "Club name is required"),
-  activity: z.string().min(1, "Activity name is required"),
-  address: z.string().min(1, "Address is required"),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  details: z.string().min(1, "Details are required"),
-});
-
-
-
-
-
-// Infer the form type from the schema
-type FormValues = z.infer<typeof formSchema>;
-
-export const handlePinTitle = (value: string): any => {
-   
+interface onAddModalProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
+const formSchema = z.object({
+    name: z.string().min(1, "Club name is required"),
+    activity: z.string().min(1, "Activity name is required"),
+    address: z.string().min(1, "Address is required"),
+    city: z.string().min(1, "City is required"),
+    state: z.string().min(1, "State is required"),
+    details: z.string().min(1, "Details are required"),
+  });
+
+export const AddModal = ({ isOpen, onClose }: onAddModalProps) => {
+  if (!isOpen) return null;
+
+  type FormValues = z.infer<typeof formSchema>;
 
 
 
-export const AddEvent = () => {
+
+
+
+
     // Initialize form with proper types
     
     
@@ -66,8 +64,16 @@ export const AddEvent = () => {
         form.reset();
         
     };
-
-    return (
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold">Add Event</h2>
+          <button onClick={onClose} className="text-xl">×</button>
+        </div>
+        <div className="space-y-4">
+          {/* */}
+         
         <div className="max-w-2xl mx-auto p-4">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -157,5 +163,9 @@ export const AddEvent = () => {
                 </form>
             </Form>
         </div>
-    );
+ 
+        </div>
+      </div>
+    </div>
+  );
 };

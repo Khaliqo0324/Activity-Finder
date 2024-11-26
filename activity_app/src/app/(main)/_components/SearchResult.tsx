@@ -19,7 +19,7 @@ interface Search {
 const SearchInbox = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFavoritesModalOpen, setFavoritesModalOpen] = useState(false); // Modal state
-
+  const [isOnAddModalOpen, setOnAddModalOpen] = useState(false);
   
   const results: Search[] = [
     {
@@ -87,6 +87,10 @@ const SearchInbox = () => {
   const toggleFavoritesModal = () => {
     setFavoritesModalOpen(!isFavoritesModalOpen);
   };
+
+  const toggleOnAddModal = () => {
+    setOnAddModalOpen(!isOnAddModalOpen);
+  };
   
   
 
@@ -113,6 +117,9 @@ const SearchInbox = () => {
               <Button variant="outline" className="bg-white">
                 Filter
               </Button>
+              <Button variant="outline" className="bg-white" onClick={toggleOnAddModal}>
+                Add Event 
+              </Button >
             </div>
           </div>
         </div>
