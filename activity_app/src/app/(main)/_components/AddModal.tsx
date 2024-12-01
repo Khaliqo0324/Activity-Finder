@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { Location, SearchState, Place, Event, EVENT_TYPES } from './types';
 
 
 interface onAddModalProps {
@@ -28,6 +28,19 @@ const formSchema = z.object({
     state: z.string().min(1, "State is required"),
     details: z.string().min(1, "Details are required"),
   });
+
+  /** 
+const handleMap = (
+    callback: (params: {lat: number; lng: number; name?: string; type?: string}) => void,
+    params: {lat: number, lng: number; name?: string}
+) => {
+    callback(params);
+};
+*/
+
+
+
+
 
 export const AddModal = ({ isOpen, onClose }: onAddModalProps) => {
   if (!isOpen) return null;
@@ -58,8 +71,7 @@ export const AddModal = ({ isOpen, onClose }: onAddModalProps) => {
     // Form submission handler
     const onSubmit = (values: FormValues) => {
         
-      
-       
+        //handleMap(addMap, mapParams);
         console.log("Form submitted with data:", values);
         form.reset();
         

@@ -1,3 +1,4 @@
+'use client';
 import mongoose, {Document, Schema} from "mongoose";
 
 export interface MyUser extends Document {
@@ -6,9 +7,9 @@ export interface MyUser extends Document {
 }
 
 const userSchema = new Schema<MyUser>({
-    email: {type: String, unique: true, required: true},
-    password: { type: String, required: true, select: false},
+    email: {type: String, required: true, unique: true},
+    password: { type: String, required: true},
 
 });
 
-export const User = mongoose.models.User ?? mongoose.model("User", userSchema);
+export const User = mongoose.models.User || mongoose.model<MyUser>("User", userSchema);

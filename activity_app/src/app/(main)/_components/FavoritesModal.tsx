@@ -32,10 +32,6 @@ export const FavoritesModal = ({
           </button>
         </div>
         <div className="space-y-4">
-<<<<<<< HEAD
-          {/* */}
-         
-=======
           {favorites.length === 0 ? (
             <p className="text-center text-gray-500 py-4">
               No favorites added yet
@@ -81,7 +77,6 @@ export const FavoritesModal = ({
               </Card>
             ))
           )}
->>>>>>> 8c87149dd16174bf1aa854d23399a883a7d7954a
         </div>
       </div>
     </div>

@@ -1,11 +1,10 @@
-"use client";
+'use client';
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import {signIn} from "next-auth/react";
-import {signOut} from "next-auth/react";
+import { signIn, signOut } from "@/auth";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import bcrypt from 'bcryptjs';
@@ -14,12 +13,30 @@ import bcrypt from 'bcryptjs';
 
 
 
-
+/** 
 export async function doLogout() {
   await signOut({ redirectTo: "/"});
 }
 
 
+export async function doLogin(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  try {
+    const resp = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    return resp;
+    window.location.href = "/base";
+  } catch (err: any) {
+    console.log(err);
+    throw err;
+
+  }
+}
+*/
 const makeRequest = async (url: string, content: object ) => {
   const handleReq = await fetch(url, {
     method: 'POST',
@@ -43,7 +60,7 @@ const makeRequest = async (url: string, content: object ) => {
   
 
 
-export function SignInForm(): any {
+export async function SignInForm()  {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
@@ -51,10 +68,10 @@ export function SignInForm(): any {
     
 
   // Handle form submission
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    
     e.preventDefault();
     
-     
     const User = {
 
       email: email,
@@ -67,9 +84,9 @@ export function SignInForm(): any {
       setPassword("");
       
     } 
-   
-    /** 
-        const response = await signIn("credentials", {
+   try {
+     
+        const response = signIn("credentials", {
           email,
           password,
           redirect: false,
@@ -78,7 +95,7 @@ export function SignInForm(): any {
       } catch (err: any) {
         throw err;
       }
-     */
+     
 
       
       // Here you would typically:
@@ -123,7 +140,7 @@ export function SignInForm(): any {
             
             <div className="relative space-y-2">
               <Input
-                type={showPassword ? "text" : "password"}
+                type={"pass"}
                 placeholder="Password"
                 onChange={(e)=> setPassword(e.target.value)}
                 value={password}
@@ -132,14 +149,14 @@ export function SignInForm(): any {
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                //onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
               >
-                {showPassword ? (
-                  <EyeOffIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )}
+                {//(
+                 // <EyeOffIcon className="h-5 w-5" />
+                //) : (
+                 // <EyeIcon className="h-5 w-5" />
+                }
               </button>
             </div>
 
@@ -157,9 +174,9 @@ export function SignInForm(): any {
               className="w-full" 
               variant="default"
               type="submit"
-              disabled={isLoading}
+              //disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {"Sign In"}
             </Button>
 
             <div className="relative">

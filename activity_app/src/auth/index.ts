@@ -1,29 +1,13 @@
-
-import connectMongoDB from "../../../(libs)/mongodb";
-import { User } from "@/app/(models)/UserSchema";
-import { NextResponse } from "next/server";
-import { NextApiRequest } from "next";
+import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-
-import {authConfig} from 'auth.config';
-
-
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-//import bcrypt from "bcryptjs";
-//import { User } from "./src/app/(models)/UserSchema";
-
-//import { NextResponse } from 'next/server';
-//import bcrypt from 'bcryptjs';
-//import { User } from '../app/(models)/UserSchema'; 
-//import connectMongoDB from "../app/(libs)/mongodb";
-//export {signIn, signOut} from "next-auth/react";
+import { User } from '../app/(models)/UserSchema'; 
+import connectMongoDB from "../app/(libs)/mongodb";
+export {signIn, signOut} from "next-auth/react";
 
 import { getSession } from 'next-auth/react'; // Use NextAuth for session management
 
-export async function GET(request: NextApiRequest) {
-     
-    //await connectMongoDB();
+export async function GET(request: Request) {
+    await connectMongoDB();
   try {
     // Retrieve the session (replace with your auth validation logic)
     const session = await getSession({ req: request });
@@ -31,14 +15,13 @@ export async function GET(request: NextApiRequest) {
     if (!session) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
-await connectMongoDB();
+
     // Return user information
     return NextResponse.json({ user: session.user }, { status: 200 });
   } catch (error) {
     console.error('Error fetching user data:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-    
 }
 
 
