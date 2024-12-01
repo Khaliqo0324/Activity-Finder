@@ -11,6 +11,7 @@ import Map from './Map';
 import { Location, SearchState, Place, Event, EVENT_TYPES } from './types';
 import { EventFilters } from './EventFilters';
 import {AddModal} from "./AddModal";
+import { IItem } from '@/models/eventSchema';
 
 
 const LocationErrorAlert = ({ error, onRetry, isLoading }: { 
@@ -34,6 +35,46 @@ const LocationErrorAlert = ({ error, onRetry, isLoading }: {
     </Button>
   </Alert>
 );
+
+export async function fetchMongoEvents(): Promise<Event[]> {
+  try {
+    const response = await fetch('/api/events');
+    const data = await response.json();
+    
+    return data.events.map((mongoEvent: IItem & { _id: string }): Event => {
+      const event: Event = {
+        id: mongoEvent._id,
+        name: mongoEvent.name,
+        description: mongoEvent.description,
+        start_time: mongoEvent.start_time,
+        end_time: mongoEvent.end_time,
+        location: mongoEvent.location,
+        type: mongoEvent.type || 'custom',
+        capacity: Number(mongoEvent.capacity),
+        geometry: {
+          location: {
+            lat: mongoEvent.latitude,
+            lng: mongoEvent.longitude
+          }
+        }
+      };
+
+      if (mongoEvent.attendees !== undefined) {
+        event.attendees = mongoEvent.attendees;
+      }
+
+      return event;
+    });
+  } catch (error) {
+    console.error('Error fetching MongoDB events:', error);
+    return [];
+  }
+}
+
+// Make sure your Event component's props have the proper type:
+interface EventCardProps {
+  event: Event;
+}
 
 export const Inbox = () => {
   // Search and filter state
@@ -148,72 +189,67 @@ export const Inbox = () => {
   
   const searchNearbyEvents = useCallback(async (location: Location) => {
     if (!mapServiceRef.current) return;
-  
+   
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }));
-  
-    const request: google.maps.places.TextSearchRequest = {
-      location: new google.maps.LatLng(location.lat, location.lng),
-      radius: parseInt(searchCriteriaRef.current.radius),
-      query: 'events venues conferences',
-      type: 'establishment'
-    };
-  
+   
     try {
-      mapServiceRef.current.textSearch(
-        request,
-        (results, status) => {
+      // Fetch MongoDB events
+      const mongoEvents = await fetchMongoEvents();
+   
+      // Fetch Google Places events
+      const placesEvents = await new Promise<Event[]>((resolve, reject) => {
+        const request: google.maps.places.TextSearchRequest = {
+          location: new google.maps.LatLng(location.lat, location.lng),
+          radius: parseInt(searchCriteriaRef.current.radius),
+          query: 'events venues conferences',
+          type: 'establishment'
+        };
+   
+        mapServiceRef.current!.textSearch(request, (results, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            const mockEvents: Event[] = results
-            //const addEventMain: Event[] = results
+            const events = results
               .filter(place => place.geometry?.location)
-              .map(place => {
-                // Extract the actual number values from the LatLng object
-                const lat = place.geometry?.location?.lat() ?? 0;
-                const lng = place.geometry?.location?.lng() ?? 0;
-                
-                return {
-                  id: place.place_id || `event-${Math.random()}`,
-                  name: `Event at ${place.name || 'Unknown Venue'}`,
-                  description: `Special event happening at ${place.name || 'Unknown Venue'}`,
-                  start_time: new Date(Date.now() + Math.random() * 86400000).toISOString(),
-                  end_time: new Date(Date.now() + Math.random() * 172800000).toISOString(),
-                  location: place.formatted_address || place.name || 'Unknown Location',
-                  type: EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)].value,
-                  capacity: Math.floor(Math.random() * 200) + 50,
-                  attendees: Math.floor(Math.random() * 50),
-                  geometry: {
-                    location: {
-                      lat, // Now it's just a number
-                      lng  // Now it's just a number
-                    }
+              .map(place => ({
+                id: place.place_id || `event-${Math.random()}`,
+                name: `Event at ${place.name || 'Unknown Venue'}`,
+                description: `Special event happening at ${place.name || 'Unknown Venue'}`,
+                location: place.formatted_address || place.name || 'Unknown Location',
+                type: EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)].value,
+                capacity: Math.floor(Math.random() * 200) + 50,
+                start_time: new Date(Date.now() + Math.random() * 86400000).toISOString(),
+                end_time: new Date(Date.now() + Math.random() * 172800000).toISOString(),
+                geometry: {
+                  location: {
+                    lat: place.geometry?.location?.lat() ?? 0,
+                    lng: place.geometry?.location?.lng() ?? 0
                   }
-                };
-              });
-  
-           setEvents(mockEvents);
-           //setEvents(addEventMain);
-            setSearchState(prev => ({
-              ...prev,
-              isLoading: false,
-              error: null
-            }));
+                }
+              }));
+            resolve(events);
           } else {
-            setSearchState(prev => ({
-              ...prev,
-              isLoading: false,
-              error: 'Failed to fetch nearby events',
-            }));
+            reject(new Error('Failed to fetch places events'));
           }
-        }
-      );
-    } catch (error) {
+        });
+      });
+   
+      // Combine both sources of events 
+      const combinedEvents = [...mongoEvents, ...placesEvents];
+      setEvents(combinedEvents);
       setSearchState(prev => ({
         ...prev,
         isLoading: false,
-        error: 'Failed to search for events',
+        error: null
+      }));
+   
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setSearchState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to fetch events'
       }));
     }
-  }, []);
+   }, []);
 
   // Get location error message
   const getLocationErrorMessage = (error: GeolocationPositionError) => {

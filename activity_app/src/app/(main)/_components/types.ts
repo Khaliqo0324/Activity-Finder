@@ -46,19 +46,41 @@ export interface Location {
     id: string;
     name: string;
     description: string;
-    start_time: string;
-    end_time: string;
     location: string;
     type: string;
-    capacity?: number;
-    attendees?: number;
+    capacity: number;
+    start_time: string;
+    end_time: string;
     geometry: {
       location: {
         lat: number;
         lng: number;
-      };
+      }
+    };
+    attendees?: number;
+  }
+
+  export interface BaseEvent {
+    id: string;
+    name: string;
+    description: string;
+    location: string;
+    type: string;
+    capacity: number;
+    start_time: string;
+    end_time: string;
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      }
     };
   }
+
+  export interface Event extends BaseEvent {
+    attendees?: number;
+  }
+  
   
   export const EVENT_TYPES = [
     { value: 'all', label: 'All Events' },
