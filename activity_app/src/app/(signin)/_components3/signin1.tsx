@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { signIn, signOut } from "@/auth";
+import { signIn, signOut } from "next-auth/react";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import bcrypt from 'bcryptjs';
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { boolean } from 'zod';
 
 
 
@@ -37,7 +38,9 @@ export async function doLogin(formData: FormData) {
   }
 }
 */
+let alert = false;
 const makeRequest = async (url: string, content: object ) => {
+  console.log('making request...');
   const handleReq = await fetch(url, {
     method: 'POST',
     headers: {
@@ -52,15 +55,29 @@ const makeRequest = async (url: string, content: object ) => {
     window.location.href = '/base';
     return result;
   } else {
+    alert = true;
+    window.location.href = '/';
     console.log('something went wrong');
   }
 
 };
 
-  
+  const handleAlert = () => {
+    if (alert) {
+    return (
+      <Alert >
+        
+        <AlertTitle>Heads up!</AlertTitle>
+        <AlertDescription>
+          You can add components to your app using the cli.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  }
 
 
-export async function SignInForm()  {
+export function SignInForm()  {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
@@ -91,11 +108,12 @@ export async function SignInForm()  {
           password,
           redirect: false,
         });
+       
         return response;
       } catch (err: any) {
         throw err;
       }
-     
+      
 
       
       // Here you would typically:
@@ -124,9 +142,11 @@ export async function SignInForm()  {
           <p className="text-sm text-gray-600">
             Sign in to your account
           </p>
+          
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} id="login" className="space-y-4">
+        <CardContent >
+          
+          <form onChange={handleAlert}onSubmit={handleSubmit} id="login" className="space-y-4">
             <div className="space-y-2">
               <Input
                 type="email"

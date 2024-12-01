@@ -1,5 +1,5 @@
-'use client';
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, {Document, Schema, Model} from "mongoose";
+
 
 export interface MyUser extends Document {
     email: string;
@@ -12,4 +12,4 @@ const userSchema = new Schema<MyUser>({
 
 });
 
-export const User = mongoose.models.User || mongoose.model<MyUser>("User", userSchema);
+export const User: Model<MyUser> = mongoose.models.User ?? mongoose.model<MyUser>("User", userSchema);

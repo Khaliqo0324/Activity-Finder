@@ -10,11 +10,11 @@ export const Navbar = () => {
             <Logo />
             <div className="md:ml-auto md:justify-end justify-between w-full flex">
                 {/* Replace authentication checks with static buttons or links */}
-                {/* <Button size="sm" asChild>
+                { <Button size="sm" asChild>
                     <Link href="/signin">
                         Log in
                     </Link>
-                </Button> */}
+                </Button> }
             </div>
         </div>
     );
