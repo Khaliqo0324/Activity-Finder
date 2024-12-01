@@ -11,8 +11,6 @@ import Map from './Map';
 import { Location, SearchState, Place, Event, EVENT_TYPES } from './types';
 import { EventFilters } from './EventFilters';
 import {AddModal} from "./AddModal";
-import { createMockEvent } from './mockEventHelpers';
-import { addMap } from './addMap';
 
 
 const LocationErrorAlert = ({ error, onRetry, isLoading }: { 
@@ -336,49 +334,10 @@ export const Inbox = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState('today');
 
-  const handleAddMockEvent = () => {
-    if (!currentLocation) return;
-    
-    const mockEvent = createMockEvent({
-      lat: currentLocation.lat + 0.001,
-      lng: currentLocation.lng + 0.001,
-      name: "Community Festival 2024",
-      type: "community"
-    });
-    
-  setEvents(prevEvents => [...prevEvents, mockEvent]);
-  };
-
-/** 
-  const handleAddEvent = () => {
-    if (!currentLocation) return;
-    
-    const mainEvent = addMap({
-      lat: currentLocation.lat + 0.001,
-      lng: currentLocation.lng + 0.001,
-      name: "Community Festival 2024",
-      type: "community"
-    });
-    
-    setEvents(prevEvents => [...prevEvents, mainEvent]);
-  };
-
-*/
-//<Button>
-  //onClick={mockEvent}
-  //disabled={!currentLocation}
-  //className={"ml-2"}
-        
-          
-//</Button>
-
   return (
     <div className="flex w-screen h-screen">
       <div className="w-1/2 p-4 border-r border-gray-200 overflow-y-auto">
         <div className="max-w-3xl mx-auto p-4">
-          
-        
-
           <SearchHeader 
             onSearch={handleSearch}
             isRequestingLocation={isRequestingLocation}
