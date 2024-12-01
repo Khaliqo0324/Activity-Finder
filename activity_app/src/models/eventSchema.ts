@@ -1,19 +1,23 @@
-import mongoose, {Schema, Document, Model} from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface IItem extends Document {
+export interface IEvent extends Document {
     name: string;
     description: string;
     location: string;
+    type: string;
     capacity: number;
     start_time: string;
     end_time: string;
-    latitude: number;
-    longitude: number;
-    type: string;
+    geometry: {
+        location: {
+            lat: number;
+            lng: number;
+        }
+    };
     attendees?: number;
 }
 
-const eventSchema = new Schema<IItem>({
+const eventSchema = new Schema<IEvent>({
     name: {
         type: String,
         required: true,
@@ -27,8 +31,19 @@ const eventSchema = new Schema<IItem>({
         type: String,
         required: true,
     },
+    geometry: {
+        location: {
+            lat: { type: Number, required: true, default: 0 },
+            lng: { type: Number, required: true, default: 0 }
+        }
+    },
+    type: {
+        type: String,
+        required: true,
+        default: 'custom'
+    },
     capacity: {
-        type: Number,  // Changed from String to Number
+        type: Number,
         required: true,
     },
     start_time: {
@@ -41,26 +56,11 @@ const eventSchema = new Schema<IItem>({
         required: true,
         default: () => new Date(Date.now() + 86400000).toISOString()
     },
-    latitude: {
-        type: Number,
-        default: 0,
-        required: true
-    },
-    longitude: {
-        type: Number,
-        default: 0,
-        required: true
-    },
-    type: {
-        type: String,
-        default: 'custom',
-        required: true
-    },
     attendees: {
         type: Number,
         default: 0
     }
 });
 
-const Event: Model<IItem> = mongoose.models.Event || mongoose.model<IItem>("Event", eventSchema);
+const Event = mongoose.models.Event || mongoose.model<IEvent>("Event", eventSchema);
 export default Event;

@@ -5,40 +5,81 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EVENT_TYPES, EventType } from "@/app/(main)/_components/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 interface Event {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   location: string;
-  capacity: string;
+  type: EventType;
+  capacity: number;
+  start_time: string;
+  end_time: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    }
+  };
+  attendees?: number;
 }
 
-const initialFormState = {
+interface FormData {
+  name: string;
+  description: string;
+  location: string;
+  type: EventType;
+  capacity: number;
+  start_time: string;
+  end_time: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    }
+  };
+  attendees: number;
+}
+
+const initialFormState: FormData = {
   name: '',
   description: '',
   location: '',
-  capacity: ''
+  type: 'custom',
+  capacity: 0,
+  start_time: new Date().toISOString().slice(0, 16),
+  end_time: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
+  geometry: {
+    location: {
+      lat: 0,
+      lng: 0
+    }
+  },
+  attendees: 0
 };
 
 const EventForm = () => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Form states
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [formData, setFormData] = useState(initialFormState);
+  const [formData, setFormData] = useState<FormData>(initialFormState);
 
-  // Fetch all events
   const fetchEvents = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch('/api/events');
+      if (!response.ok) throw new Error('Failed to fetch events');
       const data = await response.json();
       setEvents(data.events);
     } catch (err) {
       setError('Failed to fetch events');
+      console.error('Error fetching events:', err);
     } finally {
       setIsLoading(false);
     }
@@ -48,18 +89,37 @@ const EventForm = () => {
     fetchEvents();
   }, []);
 
-  // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value || ''
-    }));
+    if (name === 'lat' || name === 'lng') {
+      setFormData(prev => ({
+        ...prev,
+        geometry: {
+          location: {
+            ...prev.geometry.location,
+            [name]: parseFloat(value) || 0
+          }
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: name === 'capacity' || name === 'attendees'
+          ? parseInt(value) || 0 
+          : value
+      }));
+    }
   };
 
-  // Create new event
+  const handleTypeChange = (value: EventType) => {
+    setFormData(prev => ({ ...prev, type: value }));
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
     try {
       const response = await fetch('/api/events', {
         method: 'POST',
@@ -73,20 +133,25 @@ const EventForm = () => {
       setFormData(initialFormState);
     } catch (err) {
       setError('Failed to create event');
+      console.error('Error creating event:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Update event
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEvent) return;
+
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/events', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: selectedEvent._id,
+          id: selectedEvent.id,
           ...formData
         })
       });
@@ -99,12 +164,17 @@ const EventForm = () => {
       setFormData(initialFormState);
     } catch (err) {
       setError('Failed to update event');
+      console.error('Error updating event:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Delete event
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this event?')) return;
+
+    setIsLoading(true);
+    setError(null);
 
     try {
       const response = await fetch(`/api/events?id=${id}`, {
@@ -112,88 +182,176 @@ const EventForm = () => {
       });
       
       if (!response.ok) throw new Error('Failed to delete event');
-      
       await fetchEvents();
     } catch (err) {
       setError('Failed to delete event');
+      console.error('Error deleting event:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Set up edit mode
   const handleEditClick = (event: Event) => {
     setFormMode('edit');
     setSelectedEvent(event);
     setFormData({
-      name: event.name || '',
-      description: event.description || '',
-      location: event.location || '',
-      capacity: event.capacity || ''
+      name: event.name,
+      description: event.description,
+      location: event.location,
+      type: event.type,
+      capacity: event.capacity,
+      start_time: event.start_time.slice(0, 16),
+      end_time: event.end_time.slice(0, 16),
+      geometry: event.geometry,
+      attendees: event.attendees || 0
     });
   };
 
-  // Cancel edit mode
   const handleCancel = () => {
     setFormMode('create');
     setSelectedEvent(null);
     setFormData(initialFormState);
   };
 
-  if (isLoading) return <div className="p-4">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
-
   return (
-    <>
-      {/* Form Card */}
+    <div className="space-y-6 max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader>
           <CardTitle>{formMode === 'create' ? 'Create New Event' : 'Edit Event'}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={formMode === 'create' ? handleCreate : handleUpdate} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name">Name</label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="description">Description</label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="location">Location</label>
-              <Input
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="capacity">Capacity</label>
-              <Input
-                id="capacity"
-                name="capacity"
-                value={formData.capacity}
-                onChange={handleInputChange}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="name">Name</label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="type">Event Type</label>
+                <Select value={formData.type} onValueChange={handleTypeChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="description">Description</label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="location">Location</label>
+                <Input
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="capacity">Capacity</label>
+                <Input
+                  id="capacity"
+                  name="capacity"
+                  type="number"
+                  value={formData.capacity}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="start_time">Start Time</label>
+                <Input
+                  id="start_time"
+                  name="start_time"
+                  type="datetime-local"
+                  value={formData.start_time}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="end_time">End Time</label>
+                <Input
+                  id="end_time"
+                  name="end_time"
+                  type="datetime-local"
+                  value={formData.end_time}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="lat">Latitude</label>
+                <Input
+                  id="lat"
+                  name="lat"
+                  type="number"
+                  step="any"
+                  value={formData.geometry.location.lat}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="lng">Longitude</label>
+                <Input
+                  id="lng"
+                  name="lng"
+                  type="number"
+                  step="any"
+                  value={formData.geometry.location.lng}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {formMode === 'edit' && (
+                <div className="space-y-2">
+                  <label htmlFor="attendees">Current Attendees</label>
+                  <Input
+                    id="attendees"
+                    name="attendees"
+                    type="number"
+                    value={formData.attendees}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit">
-                {formMode === 'create' ? 'Create Event' : 'Update Event'}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>
+                ) : formMode === 'create' ? 'Create Event' : 'Update Event'}
               </Button>
               {formMode === 'edit' && (
                 <Button type="button" variant="outline" onClick={handleCancel}>
@@ -205,25 +363,47 @@ const EventForm = () => {
         </CardContent>
       </Card>
 
-      {/* Events List */}
-      <Card className="mt-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Card>
         <CardHeader>
           <CardTitle>Events</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {events.length === 0 ? (
-              <p>No events found.</p>
+            {isLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : events.length === 0 ? (
+              <p className="text-center py-4 text-gray-500">No events found</p>
             ) : (
               events.map((event) => (
-                <Card key={event._id}>
+                <Card key={event.id}>
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-bold">{event.name}</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold">{event.name}</h3>
+                          <span className="text-sm px-2 py-1 bg-gray-100 rounded-full">
+                            {EVENT_TYPES.find(t => t.value === event.type)?.label || event.type}
+                          </span>
+                        </div>
                         <p className="text-sm text-gray-600">{event.description}</p>
                         <p className="text-sm">Location: {event.location}</p>
                         <p className="text-sm">Capacity: {event.capacity}</p>
+                        <p className="text-sm">Start: {new Date(event.start_time).toLocaleString()}</p>
+                        <p className="text-sm">End: {new Date(event.end_time).toLocaleString()}</p>
+                        <p className="text-sm">
+                          Coordinates: {event.geometry.location.lat}, {event.geometry.location.lng}
+                        </p>
+                        {event.attendees !== undefined && (
+                          <p className="text-sm">Attendees: {event.attendees}</p>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button 
@@ -236,7 +416,7 @@ const EventForm = () => {
                         <Button 
                           variant="destructive" 
                           size="sm"
-                          onClick={() => handleDelete(event._id)}
+                          onClick={() => handleDelete(event.id)}
                         >
                           Delete
                         </Button>
@@ -249,7 +429,7 @@ const EventForm = () => {
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 };
 

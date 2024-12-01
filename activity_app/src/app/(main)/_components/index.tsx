@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,9 +12,7 @@ import { FavoritesModal } from './FavoritesModal';
 import Map from './Map';
 import { Location, SearchState, Place, Event, EVENT_TYPES } from './types';
 import { EventFilters } from './EventFilters';
-import {AddModal} from "./AddModal";
-import { IItem } from '@/models/eventSchema';
-
+import { AddModal } from "./AddModal";
 
 const LocationErrorAlert = ({ error, onRetry, isLoading }: { 
   error: string;
@@ -39,32 +39,26 @@ const LocationErrorAlert = ({ error, onRetry, isLoading }: {
 export async function fetchMongoEvents(): Promise<Event[]> {
   try {
     const response = await fetch('/api/events');
-    const data = await response.json();
+    if (!response.ok) throw new Error('Failed to fetch events');
     
-    return data.events.map((mongoEvent: IItem & { _id: string }): Event => {
-      const event: Event = {
-        id: mongoEvent._id,
-        name: mongoEvent.name,
-        description: mongoEvent.description,
-        start_time: mongoEvent.start_time,
-        end_time: mongoEvent.end_time,
-        location: mongoEvent.location,
-        type: mongoEvent.type || 'custom',
-        capacity: Number(mongoEvent.capacity),
-        geometry: {
-          location: {
-            lat: mongoEvent.latitude,
-            lng: mongoEvent.longitude
-          }
+    const data = await response.json();
+    return data.events.map((event: any): Event => ({
+      id: event.id,
+      name: event.name,
+      description: event.description,
+      location: event.location,
+      type: event.type,
+      capacity: event.capacity,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      geometry: {
+        location: {
+          lat: event.geometry.location.lat,
+          lng: event.geometry.location.lng
         }
-      };
-
-      if (mongoEvent.attendees !== undefined) {
-        event.attendees = mongoEvent.attendees;
-      }
-
-      return event;
-    });
+      },
+      attendees: event.attendees
+    }));
   } catch (error) {
     console.error('Error fetching MongoDB events:', error);
     return [];
@@ -249,7 +243,8 @@ export const Inbox = () => {
         error: 'Failed to fetch events'
       }));
     }
-   }, []);
+  }, []);
+
 
   // Get location error message
   const getLocationErrorMessage = (error: GeolocationPositionError) => {
@@ -378,9 +373,9 @@ export const Inbox = () => {
             onSearch={handleSearch}
             isRequestingLocation={isRequestingLocation}
             onFavoritesOpen={() => setFavoritesModalOpen(true)}
-            onEventsToggle={handleEventsToggle}  // Use the new handler
+            onEventsToggle={handleEventsToggle}
             isEventsView={isEventsView}
-            onAddOpen={()=> setOnAddModalOpen(true)}
+            onAddOpen={() => setOnAddModalOpen(true)}
           />
           
           {locationError && (
@@ -481,10 +476,8 @@ export const Inbox = () => {
 
       <AddModal
         isOpen={isOnAddModalOpen}
-        onClose={()=> setOnAddModalOpen(false)}
+        onClose={() => setOnAddModalOpen(false)}
       />
-
-
     </div>
   );
 };
