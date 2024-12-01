@@ -27,7 +27,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <EventContext.Provider value={{ events, setEvents, currentLocation, setCurrentLocation }}>
       {children}
-    </EventContext.Provider>
+    </EventContext.Provider>  
   );
 };
 
