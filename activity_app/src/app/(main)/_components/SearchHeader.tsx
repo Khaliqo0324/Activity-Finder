@@ -2,7 +2,9 @@
 import React from 'react';
 import { Loader2, MapPin, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { AddEvent } from '@/app/(addEvent)/_components/AddEvent';
+//import { AddEvent } from '@/app/(addEvent)/_components/AddEvent';
+import { EventProvider } from "./EventContext";
+
 
 interface SearchHeaderProps {
   onSearch: () => void;
@@ -50,9 +52,11 @@ export const SearchHeader = ({
       <Button variant="outline" className="bg-white" onClick={onFavoritesOpen}>
         Favorites
       </Button>
+       
       <Button variant="outline" className="bg-white" onClick={onAddOpen}>
        Add Event
       </Button>
+      
     </div>
   </div>
 );

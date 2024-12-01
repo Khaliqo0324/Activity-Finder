@@ -1,7 +1,7 @@
 import { Footer } from "./_components/footer";
 import { Heading } from "./_components/heading";
 import { LandingImage } from "./_components/landingimage";
-
+import { Button } from "@/components/ui/button";
 const LandingPage = () => {
   return ( 
     <div className="min-h-full flex flex-col">

@@ -1,8 +1,8 @@
 "use client";
 
 import {Navbar} from "../../_components/Navbar";
-import {AddEvent} from "../../_components/AddEvent";
-
+import App from "../../_components/AddEvent";
+import { Button } from "@/components/ui/button";
 const LandingPage = () => {
   return ( 
     <>
@@ -13,7 +13,7 @@ const LandingPage = () => {
             Add events to map.
         </h1>
         <div className="white flex items-center justify-center min-h-screen">
-
+        <App/>
        
         </div>
        
