@@ -2,26 +2,23 @@ import connectMongoDB from "@/lib/mongodb";
 import Event, { IEvent } from "@/models/eventSchema";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { Event as EventType } from "@/app/(main)/_components/types";
+import { Event as EventType, Location } from "@/app/(main)/_components/types";
 import { Document, Types } from 'mongoose';
 
 // Define the lean document type (without Document methods)
 interface MongoEventDoc {
-  _id: Types.ObjectId;
-  name: string;
-  description: string;
-  location: string;
-  type: string;
-  capacity: number;
-  start_time: string;
-  end_time: string;
-  geometry: {
-    location: {
-      lat: number;
-      lng: number;
-    }
-  };
-  attendees?: number;
+    _id: Types.ObjectId;
+    name: string;
+    description: string;
+    location: string;
+    type: string;
+    capacity: number;
+    start_time: string;
+    end_time: string;
+    geometry: {
+        location: Location;
+    };
+    attendees?: number;
 }
 
 // Create new event
@@ -42,8 +39,8 @@ export async function POST(request: NextRequest) {
             end_time: newEvent.end_time,
             geometry: {
                 location: {
-                    lat: newEvent.geometry?.location?.lat ?? 0,
-                    lng: newEvent.geometry?.location?.lng ?? 0
+                    lat: newEvent.geometry?.location?.lat || 0,
+                    lng: newEvent.geometry?.location?.lng || 0
                 }
             },
             attendees: newEvent.attendees
@@ -86,8 +83,8 @@ export async function PUT(request: NextRequest) {
             end_time: updatedEvent.end_time,
             geometry: {
                 location: {
-                    lat: updatedEvent.geometry?.location?.lat ?? 0,
-                    lng: updatedEvent.geometry?.location?.lng ?? 0
+                    lat: updatedEvent.geometry?.location?.lat || 0,
+                    lng: updatedEvent.geometry?.location?.lng || 0
                 }
             },
             attendees: updatedEvent.attendees
@@ -120,8 +117,8 @@ export async function GET() {
             end_time: event.end_time,
             geometry: {
                 location: {
-                    lat: event.geometry?.location?.lat ?? 0,
-                    lng: event.geometry?.location?.lng ?? 0
+                    lat: event.geometry?.location?.lat || 0,
+                    lng: event.geometry?.location?.lng || 0
                 }
             },
             attendees: event.attendees
@@ -161,8 +158,8 @@ export async function DELETE(request: NextRequest) {
             end_time: deletedEvent.end_time,
             geometry: {
                 location: {
-                    lat: deletedEvent.geometry?.location?.lat ?? 0,
-                    lng: deletedEvent.geometry?.location?.lng ?? 0
+                    lat: deletedEvent.geometry?.location?.lat || 0,
+                    lng: deletedEvent.geometry?.location?.lng || 0
                 }
             },
             attendees: deletedEvent.attendees

@@ -9,10 +9,7 @@ export interface IEvent extends Document {
     start_time: string;
     end_time: string;
     geometry: {
-        location: {
-            lat: number;
-            lng: number;
-        }
+        location: Location;
     };
     attendees?: number;
 }
@@ -25,22 +22,14 @@ const eventSchema = new Schema<IEvent>({
     description: {
         type: String,
         required: true,
-        default: 'No description available'
     },
     location: {
         type: String,
         required: true,
     },
-    geometry: {
-        location: {
-            lat: { type: Number, required: true, default: 0 },
-            lng: { type: Number, required: true, default: 0 }
-        }
-    },
     type: {
         type: String,
         required: true,
-        default: 'custom'
     },
     capacity: {
         type: Number,
@@ -49,12 +38,16 @@ const eventSchema = new Schema<IEvent>({
     start_time: {
         type: String,
         required: true,
-        default: () => new Date().toISOString()
     },
     end_time: {
         type: String,
         required: true,
-        default: () => new Date(Date.now() + 86400000).toISOString()
+    },
+    geometry: {
+        location: {
+            lat: { type: Number, required: true, default: 0 },
+            lng: { type: Number, required: true, default: 0 }
+        }
     },
     attendees: {
         type: Number,

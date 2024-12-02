@@ -14,6 +14,30 @@ import { Location, SearchState, Place, Event, EVENT_TYPES } from './types';
 import { EventFilters } from './EventFilters';
 import { AddModal } from "./AddModal";
 
+// Geocoding service setup
+const geocoder = typeof google !== 'undefined' ? new google.maps.Geocoder() : null;
+
+// Geocoding helper function
+const geocodeAddress = async (address: string): Promise<Location | null> => {
+  if (!geocoder) return null;
+  
+  try {
+    const response = await geocoder.geocode({ address });
+    if (response.results && response.results[0]) {
+      const location = response.results[0].geometry.location;
+      return {
+        lat: location.lat(),
+        lng: location.lng()
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return null;
+  }
+};
+
+// Location error alert component
 const LocationErrorAlert = ({ error, onRetry, isLoading }: { 
   error: string;
   onRetry: () => void;
@@ -36,48 +60,55 @@ const LocationErrorAlert = ({ error, onRetry, isLoading }: {
   </Alert>
 );
 
+// MongoDB events fetching function
 export async function fetchMongoEvents(): Promise<Event[]> {
   try {
     const response = await fetch('/api/events');
     if (!response.ok) throw new Error('Failed to fetch events');
     
     const data = await response.json();
-    return data.events.map((event: any): Event => ({
-      id: event.id,
-      name: event.name,
-      description: event.description,
-      location: event.location,
-      type: event.type,
-      capacity: event.capacity,
-      start_time: event.start_time,
-      end_time: event.end_time,
-      geometry: {
-        location: {
-          lat: event.geometry.location.lat,
-          lng: event.geometry.location.lng
+    const events = await Promise.all(data.events.map(async (event: any): Promise<Event> => {
+      let location = event.geometry?.location;
+      if (!location && event.location) {
+        const geocoded = await geocodeAddress(event.location);
+        if (geocoded) {
+          location = geocoded;
         }
-      },
-      attendees: event.attendees
+      }
+
+      return {
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        location: event.location,
+        type: event.type,
+        capacity: event.capacity,
+        start_time: event.start_time,
+        end_time: event.end_time,
+        geometry: {
+          location: location || { lat: 0, lng: 0 }
+        },
+        attendees: event.attendees
+      };
     }));
+
+    return events;
   } catch (error) {
     console.error('Error fetching MongoDB events:', error);
     return [];
   }
 }
 
-// Make sure your Event component's props have the proper type:
-interface EventCardProps {
-  event: Event;
-}
-
 export const Inbox = () => {
-  // Search and filter state
+  // State for search and filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRadius, setSelectedRadius] = useState('2000');
   const [selectedType, setSelectedType] = useState('all');
   const [eventType, setEventType] = useState('all');
   const [isEventsView, setIsEventsView] = useState(false);
   const [favorites, setFavorites] = useState<Place[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState('today');
 
   // Modal state
   const [isFavoritesModalOpen, setFavoritesModalOpen] = useState(false);
@@ -109,7 +140,7 @@ export const Inbox = () => {
   });
   const MAX_RETRY_ATTEMPTS = 3;
 
-  // Filter places based on search query
+  // Memoized filtered places
   const filteredPlaces = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return searchState.results;
@@ -120,7 +151,7 @@ export const Inbox = () => {
     );
   }, [searchState.results, searchQuery]);
 
-  // Filter events based on search query and event type
+  // Memoized filtered events
   const filteredEvents = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     return events.filter(event => {
@@ -135,6 +166,41 @@ export const Inbox = () => {
     });
   }, [events, searchQuery, eventType]);
 
+  // Memoized map markers based on current view
+  // Memoized map markers based on current view
+    // Memoized map markers based on current view
+    const mapMarkers = useMemo(() => {
+      if (isEventsView) {
+        return filteredEvents.map(event => ({
+          position: event.geometry?.location || { lat: 0, lng: 0 },
+          title: event.name,
+          address: event.location
+        }));
+      } else {
+        return searchState.results.map(place => {
+          const location = place.geometry?.location;
+          
+          const getLat = (loc: any) => {
+            if (!loc) return 0;
+            return typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+          };
+          
+          const getLng = (loc: any) => {
+            if (!loc) return 0;
+            return typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+          };
+    
+          return {
+            position: {
+              lat: getLat(location),
+              lng: getLng(location)
+            },
+            title: place.name,
+            address: place.vicinity
+          };
+        });
+      }
+    }, [isEventsView, filteredEvents, searchState.results]); 
   // Search for nearby places
   const searchNearbyPlaces = useCallback(async (location: Location) => {
     if (!mapServiceRef.current) return;
@@ -144,17 +210,50 @@ export const Inbox = () => {
     const request = {
       location: new google.maps.LatLng(location.lat, location.lng),
       radius: parseInt(searchCriteriaRef.current.radius),
-      type: searchCriteriaRef.current.type
+      type: searchCriteriaRef.current.type === 'all' ? undefined : searchCriteriaRef.current.type
     };
   
     mapServiceRef.current.nearbySearch(
       request,
       (results, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+          const placesResults = results.map(place => {
+            const location = place.geometry?.location;
+            
+            const getLat = (loc: any) => {
+              if (!loc) return 0;
+              return typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+            };
+            
+            const getLng = (loc: any) => {
+              if (!loc) return 0;
+              return typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+            };
+  
+            return {
+              place_id: place.place_id,
+              name: place.name,
+              vicinity: place.vicinity,
+              types: place.types,
+              rating: place.rating,
+              user_ratings_total: place.user_ratings_total,
+              business_status: place.business_status,
+              geometry: {
+                location: {
+                  lat: getLat(location),
+                  lng: getLng(location)
+                }
+              },
+              photos: place.photos,
+              opening_hours: place.opening_hours,
+              price_level: place.price_level
+            };
+          });
+          
           setSearchState({
             isLoading: false,
             error: null,
-            results: results as unknown as Place[]
+            results: placesResults as unknown as Place[]
           });
         } else {
           setSearchState({
@@ -166,31 +265,15 @@ export const Inbox = () => {
       }
     );
   }, []);
-
-  const handleFavoriteToggle = useCallback((placeId: string, isFavorite: boolean) => {
-    setFavorites(prev => {
-      if (isFavorite) {
-        const place = searchState.results.find(p => p.place_id === placeId);
-        if (place && !prev.some(p => p.place_id === placeId)) {
-          return [...prev, place];
-        }
-      } else {
-        return prev.filter(p => p.place_id !== placeId);
-      }
-      return prev;
-    });
-  }, [searchState.results]);
-  
+  // Search for nearby events
   const searchNearbyEvents = useCallback(async (location: Location) => {
     if (!mapServiceRef.current) return;
    
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }));
    
     try {
-      // Fetch MongoDB events
       const mongoEvents = await fetchMongoEvents();
    
-      // Fetch Google Places events
       const placesEvents = await new Promise<Event[]>((resolve, reject) => {
         const request: google.maps.places.TextSearchRequest = {
           location: new google.maps.LatLng(location.lat, location.lng),
@@ -199,11 +282,19 @@ export const Inbox = () => {
           type: 'establishment'
         };
    
-        mapServiceRef.current!.textSearch(request, (results, status) => {
+        mapServiceRef.current!.textSearch(request, async (results, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            const events = results
-              .filter(place => place.geometry?.location)
-              .map(place => ({
+            const events = await Promise.all(results.map(async place => {
+              let eventLocation = place.geometry?.location;
+              
+              if (!eventLocation && place.formatted_address) {
+                const geocoded = await geocodeAddress(place.formatted_address);
+                if (geocoded) {
+                  eventLocation = new google.maps.LatLng(geocoded.lat, geocoded.lng);
+                }
+              }
+  
+              return {
                 id: place.place_id || `event-${Math.random()}`,
                 name: `Event at ${place.name || 'Unknown Venue'}`,
                 description: `Special event happening at ${place.name || 'Unknown Venue'}`,
@@ -214,11 +305,12 @@ export const Inbox = () => {
                 end_time: new Date(Date.now() + Math.random() * 172800000).toISOString(),
                 geometry: {
                   location: {
-                    lat: place.geometry?.location?.lat() ?? 0,
-                    lng: place.geometry?.location?.lng() ?? 0
+                    lat: eventLocation?.lat() ?? 0,
+                    lng: eventLocation?.lng() ?? 0
                   }
                 }
-              }));
+              };
+            }));
             resolve(events);
           } else {
             reject(new Error('Failed to fetch places events'));
@@ -226,7 +318,6 @@ export const Inbox = () => {
         });
       });
    
-      // Combine both sources of events 
       const combinedEvents = [...mongoEvents, ...placesEvents];
       setEvents(combinedEvents);
       setSearchState(prev => ({
@@ -244,6 +335,26 @@ export const Inbox = () => {
       }));
     }
   }, []);
+
+  // Handle favorites toggle
+  // Update the handleFavoriteToggle function in Inbox.tsx
+  const handleFavoriteToggle = useCallback((placeId: string, isFavorite: boolean) => {
+    setFavorites(prev => {
+      const place = searchState.results.find(p => p.place_id === placeId) || 
+                   prev.find(p => p.place_id === placeId);
+      
+      // Don't update state if nothing would change
+      const isAlreadyFavorite = prev.some(p => p.place_id === placeId);
+      if (isFavorite === isAlreadyFavorite || !place) {
+        return prev;
+      }
+      
+      return isFavorite 
+        ? [...prev, place]
+        : prev.filter(p => p.place_id !== placeId);
+    });
+  }, [searchState.results]);
+
 
 
   // Get location error message
@@ -316,10 +427,9 @@ export const Inbox = () => {
     }
   }, [currentLocation, searchNearbyPlaces, searchNearbyEvents, isEventsView]);
 
-  // Handle search trigger
+  // Handle search
   const handleSearch = useCallback(() => {
     if (!currentLocation) return;
-  
     if (isEventsView) {
       searchNearbyEvents(currentLocation);
     } else {
@@ -327,15 +437,24 @@ export const Inbox = () => {
     }
   }, [currentLocation, isEventsView, searchNearbyEvents, searchNearbyPlaces]);
 
+  // Handle events toggle
   const handleEventsToggle = useCallback(() => {
     setIsEventsView(prev => !prev);
     if (currentLocation) {
+      // Clear previous results
+      setSearchState(prev => ({
+        ...prev,
+        results: [],
+        isLoading: true
+      }));
+      setEvents([]);
+      
       // Small timeout to ensure state has updated
       setTimeout(() => {
-        if (!isEventsView) {
-          searchNearbyEvents(currentLocation);
-        } else {
+        if (isEventsView) {
           searchNearbyPlaces(currentLocation);
+        } else {
+          searchNearbyEvents(currentLocation);
         }
       }, 0);
     }
@@ -362,8 +481,16 @@ export const Inbox = () => {
     }
   }, [selectedRadius, selectedType, eventType, currentLocation, handleSearch]);
 
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedTimeFilter, setSelectedTimeFilter] = useState('today');
+  // Update map when view changes
+  useEffect(() => {
+    if (currentLocation && mapServiceRef.current) {
+      if (isEventsView) {
+        searchNearbyEvents(currentLocation);
+      } else {
+        searchNearbyPlaces(currentLocation);
+      }
+    }
+  }, [isEventsView, currentLocation, searchNearbyEvents, searchNearbyPlaces]);
 
   return (
     <div className="flex w-screen h-screen">
@@ -447,23 +574,14 @@ export const Inbox = () => {
           center={currentLocation || { lat: 0, lng: 0 }}
           zoom={14}
           height="100vh"
-          markers={isEventsView ? 
-            filteredEvents.map(event => ({
-              position: event.geometry.location,
-              title: event.name
-            })) :
-            filteredPlaces.map(place => ({
-              position: place.geometry.location,
-              title: place.name
-            }))
-          }
+          markers={mapMarkers}
           onMapLoad={handleMapLoad}
-          showUserLocation={!!currentLocation}
-          userLocation={currentLocation || undefined}
           onError={(error) => setSearchState(prev => ({ 
             ...prev, 
             error: error.message 
           }))}
+          showUserLocation={!!currentLocation}
+          userLocation={currentLocation || undefined}
         />
       </div>
 

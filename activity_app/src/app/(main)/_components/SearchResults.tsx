@@ -1,10 +1,10 @@
-import React from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import { Place } from './types';
+import React from 'react';
 
 interface PlaceCardProps {
   place: Place;
