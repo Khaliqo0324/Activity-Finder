@@ -48,7 +48,7 @@ const SignUpForm = () => {
       if (email != "" && password != "") {
         setEmail("");
         setPassword("");
-        window.location.href = '/base';
+        window.location.href = '/signin';
       }
       
     }

@@ -17,7 +17,7 @@ export const Logo = () => {
                 alt="Logo"
             />
             <a href="/"><p className={cn("font-semibold", font.className)}>
-                ClubQuest
+                TivQuest
             </p></a>
         </div>
     )

@@ -18,8 +18,8 @@ export const PrimaryNav = () => {
             <Logo />
             <div className="md:ml-auto md:justify-end w-full flex items-center space-x-4">
                 <Button>
-                    <Link href="/base2">
-                    Add Event
+                    <Link href="/base">
+                    Back
                     </Link>
                 </Button>
                 <UserAvatar />

@@ -4,132 +4,71 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { signIn, signOut } from "next-auth/react";
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
-import bcrypt from 'bcryptjs';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { boolean } from 'zod';
+import { signIn } from "next-auth/react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-
-
-
-/** 
-export async function doLogout() {
-  await signOut({ redirectTo: "/"});
-}
-
-
-export async function doLogin(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  try {
-    const resp = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    return resp;
-    window.location.href = "/base";
-  } catch (err: any) {
-    console.log(err);
-    throw err;
-
-  }
-}
-*/
-let alert = false;
-const makeRequest = async (url: string, content: object ) => {
-  console.log('making request...');
-  const handleReq = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      
-    },
-    body: JSON.stringify(content),
-  });
-  if(handleReq.ok) {
-    const result = await handleReq.json();
-    console.log('signin worked');
-    window.location.href = '/base';
-    return result;
-  } else {
-    alert = true;
-    window.location.href = '/';
-    console.log('something went wrong');
-  }
-
-};
-
-  const handleAlert = () => {
-    if (alert) {
-    return (
-      <Alert >
-        
-        <AlertTitle>Heads up!</AlertTitle>
-        <AlertDescription>
-          You can add components to your app using the cli.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  }
-
-
-export function SignInForm()  {
+export function SignInForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState(""); 
-    
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const User = {
+    setIsLoading(true);
+    setError("");
 
-      email: email,
-      password: password,
-    };
-  
-     makeRequest('/api/auth/[...nextauth]', User);
-     if (email != "" && password != "") {
-      setEmail("");
-      setPassword("");
-      
-    } 
-   try {
-     
-        const response = signIn("credentials", {
-          email,
-          password,
-          redirect: false,
-        });
-       
-        return response;
-      } catch (err: any) {
-        throw err;
+    try {
+      // First, validate against MongoDB
+      const mongoResponse = await fetch('/api/auth/[...nextauth]', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await mongoResponse.json();
+
+      if (!mongoResponse.ok) {
+        // Handle specific error cases
+        switch (mongoResponse.status) {
+          case 400:
+            setError("Please provide both email and password.");
+            break;
+          case 404:
+            setError("No account found with this email.");
+            break;
+          case 401:
+            setError("Invalid email or password.");
+            break;
+          default:
+            setError(data.error || "An error occurred during sign in.");
+        }
+        setIsLoading(false);
+        return;
       }
-      
 
-      
-      // Here you would typically:
-      // 1. Validate the form
-      // 2. Send credentials to your authentication endpoint
-      // 3. Handle the response
+      // If MongoDB validation successful, proceed with NextAuth signin
+      const authResponse = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-      // For now, we'll just simulate a brief loading state
-      //await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect to landing page using window.location
-      //window.location.href = '/base';  // Change '/' to your landing page path
-   
-    
-     
-    
+      if (authResponse?.error) {
+        setError("Authentication failed. Please try again.");
+      } else {
+        // Successful login
+        window.location.href = '/base';
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error("Sign in error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -142,15 +81,20 @@ export function SignInForm()  {
           <p className="text-sm text-gray-600">
             Sign in to your account
           </p>
-          
         </CardHeader>
-        <CardContent >
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           
-          <form onChange={handleAlert}onSubmit={handleSubmit} id="login" className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
                 type="email"
-                onChange={(e)=> setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 value={email}
                 placeholder="Email address"
                 className="w-full"
@@ -160,23 +104,23 @@ export function SignInForm()  {
             
             <div className="relative space-y-2">
               <Input
-                type={"pass"}
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                onChange={(e)=> setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 value={password}
                 className="w-full pr-10"
                 required
               />
               <button
                 type="button"
-                //onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
               >
-                {//(
-                 // <EyeOffIcon className="h-5 w-5" />
-                //) : (
-                 // <EyeIcon className="h-5 w-5" />
-                }
+                {showPassword ? (
+                  <EyeOffIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -194,9 +138,9 @@ export function SignInForm()  {
               className="w-full" 
               variant="default"
               type="submit"
-              //disabled={isLoading}
+              disabled={isLoading}
             >
-              {"Sign In"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
             <div className="relative">
@@ -228,6 +172,6 @@ export function SignInForm()  {
       </Card>
     </div>
   );
-};
+}
 
 export default SignInForm;

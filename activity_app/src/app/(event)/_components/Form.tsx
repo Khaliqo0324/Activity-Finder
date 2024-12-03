@@ -224,7 +224,20 @@ const EventForm = () => {
   const handleTypeChange = (value: EventType) => {
     setFormData(prev => ({ ...prev, type: value }));
   };
+/*
+This submit handler:
 
+Prevents the default form submission behavior
+
+Sets a loading state and clears any previous errors
+
+Makes a POST request to the /api/events endpoint with the form data
+
+If successful, it refreshes the events list and resets the form
+
+If there's an error, it displays an error message
+Finally, it turns off the loading state regardless of success or failure
+*///
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
